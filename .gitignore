@@ -9,6 +9,7 @@
 
 # Build results
 Release/
+Debug/
 robot/Debug/
 helper/Debug/
 x64/
