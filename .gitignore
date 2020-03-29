@@ -10,8 +10,8 @@
 # Build results
 Release/
 Debug/
-robot/Debug/
-helper/Debug/
+GHelper/Debug/
+GRobot/Debug/
 x64/
 build/
 [Bb]in/

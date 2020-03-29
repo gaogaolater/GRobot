@@ -1,2 +1,0 @@
-C:\Lab\GRobot\GRobot\Debug\GRobot.exe
-C:\Lab\GRobot\GRobot\Debug\GRobot.pdb
