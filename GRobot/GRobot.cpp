@@ -8,9 +8,10 @@
 #include <string.h>
 #include <string>
 #include <direct.h>
+#include "OpenWeChat.h"
 using namespace std;
 
-void startWx();
+void StartWeChat(HWND hDlg);
 INT_PTR CALLBACK wechatRobot(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
 // 全局变量:
 HINSTANCE hInst;                                // 当前实例
@@ -46,7 +47,7 @@ INT_PTR CALLBACK wechatRobot(
 		switch (wParam)
 		{
 		case ID_STARTWX:
-			startWx();
+			StartWeChat(hDlg);
 			break;
 		case ID_CLOSEWX:
 			MessageBoxA(hDlg, "关闭按钮", "提示", NULL);
@@ -63,7 +64,7 @@ INT_PTR CALLBACK wechatRobot(
 	return (INT_PTR)FALSE;
 }
 
-void startWx() {
+void StartWeChat(HWND hDlg) {
 	//注意路径一定不能写错
 	wchar_t path[] = L"C:\\Program Files (x86)\\Tencent\\WeChat\\WeChat.exe";
 	STARTUPINFO si;
@@ -77,7 +78,7 @@ void startWx() {
 		return;
 	}
 	char dllPath[MAX_PATH] = { 0 };
-	//这里发布的时候要去除
+	//这里发布的时候Debug要去除
 	sprintf_s(dllPath, "%s\\Debug\\%s", _getcwd(NULL, 0), "GHelper.dll");
 	//为dll的路径字符串开辟内存
 	LPVOID pathPointer = VirtualAllocEx(pi.hProcess, NULL, MAX_PATH, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
@@ -92,9 +93,7 @@ void startWx() {
 	FARPROC address = GetProcAddress(GetModuleHandle(L"Kernel32.dll"), "LoadLibraryA");
 	//调用LoadLibraryA函数
 	HANDLE hRemote = CreateRemoteThread(pi.hProcess, NULL, 0, (LPTHREAD_START_ROUTINE)address, pathPointer, 0, NULL);
-
-	/*WaitForSingleObject(pi.hProcess, INFINITE);
-	CloseHandle(pi.hProcess);
-	CloseHandle(pi.hThread);*/
 	ResumeThread(pi.hThread);
+	CloseHandle(pi.hProcess);
+	CloseHandle(pi.hThread);
 }
