@@ -154,10 +154,12 @@
     <ClInclude Include="OpenWeChat.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="targetver.h" />
+    <ClInclude Include="Utils.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GRobot.cpp" />
     <ClCompile Include="OpenWeChat.cpp" />
+    <ClCompile Include="Utils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="GRobot.rc" />

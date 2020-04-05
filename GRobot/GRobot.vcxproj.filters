@@ -36,6 +36,9 @@
     <ClInclude Include="OpenWeChat.h">
       <Filter>多开</Filter>
     </ClInclude>
+    <ClInclude Include="Utils.h">
+      <Filter>工具</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GRobot.cpp">
@@ -43,6 +46,9 @@
     </ClCompile>
     <ClCompile Include="OpenWeChat.cpp">
       <Filter>多开</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils.cpp">
+      <Filter>工具</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -9,6 +9,8 @@
 #include <string>
 #include <direct.h>
 #include "OpenWeChat.h"
+#include "Utils.h"
+
 using namespace std;
 
 void StartWeChat(HWND hDlg);
@@ -35,6 +37,10 @@ INT_PTR CALLBACK wechatRobot(
 	LPARAM lParam
 	)
 {
+	char dest[100];
+	const char src[100] = "哈哈哈";
+	//swprintf_s(dest, L"1111%S-haha", UnicodeToUtf8(src));
+	sprintf_s(dest, "%s", src);
 	UNREFERENCED_PARAMETER(lParam);
 	switch (message)
 	{
@@ -50,7 +56,6 @@ INT_PTR CALLBACK wechatRobot(
 			StartWeChat(hDlg);
 			break;
 		case ID_CLOSEWX:
-			MessageBoxA(hDlg, "关闭按钮", "提示", NULL);
 			break;
 		default:
 			break;
@@ -94,6 +99,6 @@ void StartWeChat(HWND hDlg) {
 	//调用LoadLibraryA函数
 	HANDLE hRemote = CreateRemoteThread(pi.hProcess, NULL, 0, (LPTHREAD_START_ROUTINE)address, pathPointer, 0, NULL);
 	ResumeThread(pi.hThread);
-	CloseHandle(pi.hProcess);
-	CloseHandle(pi.hThread);
+	//CloseHandle(pi.hProcess);
+	//CloseHandle(pi.hThread);
 }

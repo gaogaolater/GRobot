@@ -1,37 +1,37 @@
 ﻿// dllmain.cpp : 定义 DLL 应用程序的入口点。
 #include "pch.h"
 #include "resource.h"
+#include "MyInfo.h"
+#include "Utils.h"
 
 INT_PTR CALLBACK DiglogFunc(
-	HWND hDlg,
-	UINT message,
-	WPARAM wParam,
-	LPARAM lParam
-	);
+    HWND hDlg,
+    UINT message,
+    WPARAM wParam,
+    LPARAM lParam
+    );
 VOID ShowDialog(HINSTANCE hModule);
-
-BOOL APIENTRY DllMain(HMODULE hModule,
-	DWORD  ul_reason_for_call,
-	LPVOID lpReserved
-	)
+void ShowMyInfo(HWND hDlg);
+BOOL APIENTRY DllMain( HMODULE hModule,
+                       DWORD  ul_reason_for_call,
+                       LPVOID lpReserved
+                     )
 {
-	switch (ul_reason_for_call)
-	{
-	case DLL_PROCESS_ATTACH:
-		CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)ShowDialog, hModule, NULL, 0);
-		break;
-	case DLL_THREAD_ATTACH:
-	case DLL_THREAD_DETACH:
-	case DLL_PROCESS_DETACH:
-		break;
-	}
-	return TRUE;
+    switch (ul_reason_for_call)
+    {
+    case DLL_PROCESS_ATTACH:
+        CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)ShowDialog, hModule, NULL, 0);
+    case DLL_THREAD_ATTACH:
+    case DLL_THREAD_DETACH:
+    case DLL_PROCESS_DETACH:
+        break;
+    }
+    return TRUE;
 }
 
 VOID ShowDialog(HINSTANCE hModule) {
 	DialogBox(hModule, MAKEINTRESOURCE(IDD_MAIN), NULL, &DiglogFunc);
 }
-
 
 INT_PTR CALLBACK DiglogFunc(
 	HWND hDlg,
@@ -52,7 +52,10 @@ INT_PTR CALLBACK DiglogFunc(
 		switch (wParam)
 		{
 		case IDOK:
-			MessageBox(NULL, L"好了", L"tip", MB_OK);
+			ShowMyInfo(hDlg);
+			break;
+		case IDCANCEL:
+
 			break;
 		default:
 			break;
@@ -65,3 +68,15 @@ INT_PTR CALLBACK DiglogFunc(
 	}
 	return (INT_PTR)FALSE;
 }
+
+void ShowMyInfo(HWND hDlg) {
+	MyInfo*  info = GetMyInfo();
+	wchar_t text[1000];
+	swprintf_s(text, L"wxid:%S,device:%S,headImage:%S,nickname:%S", 
+		UnicodeToUtf8(info->wxid),
+		UnicodeToUtf8(info->device), 
+		UnicodeToUtf8(info->headImage),
+		UnicodeToUtf8(info->nickname));
+	SetDlgItemText(hDlg, IDC_LOG, text);
+}
+
