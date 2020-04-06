@@ -10,7 +10,7 @@
 #include <direct.h>
 #include "OpenWeChat.h"
 #include "Utils.h"
-
+#include<list>
 using namespace std;
 
 void StartWeChat(HWND hDlg);
@@ -29,6 +29,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	return 0;
 }
 
+struct DBNameHandle {
+	int DBHandler;
+	char DBName[MAX_PATH];
+};
 
 INT_PTR CALLBACK wechatRobot(
 	HWND hDlg,
@@ -37,10 +41,6 @@ INT_PTR CALLBACK wechatRobot(
 	LPARAM lParam
 	)
 {
-	char dest[100];
-	const char src[100] = "哈哈哈";
-	//swprintf_s(dest, L"1111%S-haha", UnicodeToUtf8(src));
-	sprintf_s(dest, "%s", src);
 	UNREFERENCED_PARAMETER(lParam);
 	switch (message)
 	{

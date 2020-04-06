@@ -1,9 +1,10 @@
 ﻿// dllmain.cpp : 定义 DLL 应用程序的入口点。
 #include "pch.h"
 #include "resource.h"
+#include "DB.h"
 #include "MyInfo.h"
 #include "Utils.h"
-
+#include <windows.h>
 INT_PTR CALLBACK DiglogFunc(
     HWND hDlg,
     UINT message,
@@ -41,10 +42,16 @@ INT_PTR CALLBACK DiglogFunc(
 	)
 {
 	UNREFERENCED_PARAMETER(lParam);
+	list<DBNameHandle>* dbList;
 	switch (message)
 	{
 	case WM_INITDIALOG:
 	{
+		setGlobalHwnd(hDlg);
+		HANDLE hookThread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)hookDBHandle, NULL, NULL, 0);
+		if (hookThread != 0) {
+			CloseHandle(hookThread);
+		}
 		return (INT_PTR)TRUE;
 	}
 	case WM_COMMAND:
@@ -55,7 +62,8 @@ INT_PTR CALLBACK DiglogFunc(
 			ShowMyInfo(hDlg);
 			break;
 		case IDCANCEL:
-
+			dbList = GetDbListHandle();
+			MessageBox(hDlg, to_wstring(dbList->size()).c_str(), L"tip", MB_OK);
 			break;
 		default:
 			break;
