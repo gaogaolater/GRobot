@@ -13,6 +13,7 @@ INT_PTR CALLBACK DiglogFunc(
     );
 VOID ShowDialog(HINSTANCE hModule);
 void ShowMyInfo(HWND hDlg);
+void ExecSqlClient(HWND hDlg);
 BOOL APIENTRY DllMain( HMODULE hModule,
                        DWORD  ul_reason_for_call,
                        LPVOID lpReserved
@@ -42,7 +43,6 @@ INT_PTR CALLBACK DiglogFunc(
 	)
 {
 	UNREFERENCED_PARAMETER(lParam);
-	list<DBNameHandle>* dbList;
 	switch (message)
 	{
 	case WM_INITDIALOG:
@@ -58,12 +58,11 @@ INT_PTR CALLBACK DiglogFunc(
 	{
 		switch (wParam)
 		{
-		case IDOK:
+		case IDBTNMYINFO:
 			ShowMyInfo(hDlg);
 			break;
-		case IDCANCEL:
-			dbList = GetDbListHandle();
-			MessageBox(hDlg, to_wstring(dbList->size()).c_str(), L"tip", MB_OK);
+		case IDBTNSQL:
+			ExecSqlClient(hDlg);
 			break;
 		default:
 			break;
@@ -77,6 +76,31 @@ INT_PTR CALLBACK DiglogFunc(
 	return (INT_PTR)FALSE;
 }
 
+//sql查询结果
+wstring sqlResult;
+int SQLCallback(void* para, int nColumn, char** colValue, char** colName) 
+{
+	for (int i = 0; i < nColumn; i++)
+	{
+		char row[1000];
+		sprintf_s(row, " %s:%s ",*(colName + i), colValue[i]);
+		sqlResult += CharToWchar(row);
+	}
+	sqlResult += L"\r\n";
+	SetDlgItemText(getGlobalHwnd(), IDC_SQLRESULT, sqlResult.c_str());
+	return 0;
+}
+
+void ExecSqlClient(HWND hDlg) {
+	sqlResult = L"";
+	char* sqlErrmsg = NULL;
+	char dbName[0x100] = { 0 };
+	GetDlgItemTextA(hDlg, IDC_COMBODB, dbName, 100);
+	char sql[0x1000] = { 0 };
+	GetDlgItemTextA(hDlg, IDC_EBSQL, sql, 1000);
+	ExecSql(dbName,sql, SQLCallback, sqlErrmsg);
+}
+
 void ShowMyInfo(HWND hDlg) {
 	MyInfo*  info = GetMyInfo();
 	wchar_t text[1000];
@@ -85,6 +109,6 @@ void ShowMyInfo(HWND hDlg) {
 		UnicodeToUtf8(info->device), 
 		UnicodeToUtf8(info->headImage),
 		UnicodeToUtf8(info->nickname));
-	SetDlgItemText(hDlg, IDC_LOG, text);
+	SetDlgItemText(hDlg, IDC_EBLOG, text);
 }
 

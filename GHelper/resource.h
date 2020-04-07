@@ -3,7 +3,12 @@
 // π© GHelper.rc  π”√
 //
 #define IDD_MAIN                        101
-#define IDC_LOG                         1001
+#define IDC_SQLRESULT                   1001
+#define IDC_EBLOG                       1002
+#define IDBTNSQL                        1003
+#define IDBTNMYINFO                     1004
+#define IDC_EBSQL                       1005
+#define IDC_COMBODB                     1006
 
 // Next default values for new objects
 // 
@@ -11,7 +16,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        105
 #define _APS_NEXT_COMMAND_VALUE         40001
-#define _APS_NEXT_CONTROL_VALUE         1002
+#define _APS_NEXT_CONTROL_VALUE         1007
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

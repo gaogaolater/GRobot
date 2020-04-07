@@ -1,8 +1,12 @@
 ﻿#include "DB.h"
 #include "Utils.h"
 #include "resource.h"
-#include <string>
 #include "pch.h"
+#include <Shlwapi.h>
+#include <string>
+//必须引入以下库 否则StrStrA有问题
+#pragma comment(lib,"Shlwapi.lib")
+using namespace std;
 DWORD dbHookAddress;
 std::wstring dbStrAll;
 list<DBNameHandle> dbList;
@@ -16,7 +20,13 @@ void SetDBItem(int path, int dbHandle) {
 	dbStrAll += L"-";
 	dbStrAll += CharToWchar((char*)path);
 	dbStrAll += L"\r\n";
-	SetDlgItemText(getGlobalHwnd(), IDC_LOG, dbStrAll.c_str());
+	SetDlgItemText(getGlobalHwnd(), IDC_EBLOG, dbStrAll.c_str());
+	//IDC_COMBODB
+	HWND dbSelect = GetDlgItem(getGlobalHwnd(), IDC_COMBODB);
+	wstring dbPath = wstring(CharToWchar(item.DBName));
+	int pos1 = dbPath.find(L"\\Msg\\");
+	wstring dbName = dbPath.substr(pos1 + 5);
+	SendMessage(dbSelect, CB_ADDSTRING, 0, (LPARAM)dbName.c_str());
 }
 
 __declspec(naked) void My_Hook()
@@ -60,6 +70,7 @@ void hookDBHandle()
 	offset ‭47F903
 	*/
 	DWORD hookAddress = dllAddr + 0x47F903;
+	
 	dbHookAddress = hookAddress + 6;
 	BYTE jumpCode[6] = {0};
 	jumpCode[0] = 0xE9;//jump
@@ -68,9 +79,24 @@ void hookDBHandle()
 	WriteProcessMemory(GetCurrentProcess(), (LPVOID)hookAddress, jumpCode, 6, NULL);
 }
 
-list<DBNameHandle>* GetDbListHandle()
+list<DBNameHandle> GetDbListHandle()
 {
-	return &dbList;
+	return dbList;
+}
+
+int ExecSql(string dbName, string sql, sqlite3_callback callback, char*& err)
+{
+	sqlite3_exec sqlexec = (sqlite3_exec)(GetWeChatWinAddress() + 0x8C4430);
+	list<DBNameHandle> dbList = GetDbListHandle();
+	for (auto& db : dbList)
+	{
+		if (StrStrA(db.DBName, dbName.c_str()))
+		{
+			sqlexec(db.DBHandler, sql.c_str(), callback, NULL, &err);
+			return 0;
+		}
+	}
+	return 1;
 }
 
 
