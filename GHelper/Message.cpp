@@ -29,9 +29,17 @@ void ReceiveMsg() {
 	//eax+0x44 长度  10个人  14群消息
 	//eax+0x48 类型
 	Msg sender;
-	swprintf_s(sender.text, L"%s", (wchar_t*)(**espPtr + 0x40));
-	EasyLog::Write(WcharToChar(sender.text));
 
+	swprintf_s(sender.text, L"%s", (wchar_t*)*(DWORD*)(**espPtr + 0x40));
+	EasyLog::Write(WcharToChar(sender.text));
+	wchar_t content[1000];
+	swprintf_s(content, L"%s", (wchar_t*)*(DWORD*)(**espPtr + 0x68));
+	EasyLog::Write(WcharToChar(content));
+	msgAll += sender.text;
+	msgAll += L" : ";
+	msgAll += content;
+	msgAll += L"\r\n";
+	SetDlgItemText(getGlobalHwnd(), IDC_MESSAGE, msgAll.c_str());
 	//EasyLog::Write((char*)(**espPtr + 0x40));
 	//sender.len = (int)(**espPtr + 0x44);
 	//EasyLog::Write("32");
@@ -74,7 +82,6 @@ __declspec(naked) void My_Hook_Message()
 }
 
 void HookMessage() {
-	return;
 	DWORD dllAddr;
 	while (true) {
 		dllAddr = GetWeChatWinAddress();
