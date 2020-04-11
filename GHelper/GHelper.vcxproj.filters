@@ -22,6 +22,9 @@
     <Filter Include="数据库">
       <UniqueIdentifier>{b6833459-20e7-4140-af4d-ff59fb03c3f6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="消息">
+      <UniqueIdentifier>{f29dc3f9-2506-473a-8559-7078ac66cda8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -48,6 +51,12 @@
     <ClInclude Include="DB.h">
       <Filter>数据库</Filter>
     </ClInclude>
+    <ClInclude Include="Message.h">
+      <Filter>消息</Filter>
+    </ClInclude>
+    <ClInclude Include="EasyLog.h">
+      <Filter>工具</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -67,6 +76,12 @@
     </ClCompile>
     <ClCompile Include="DB.cpp">
       <Filter>数据库</Filter>
+    </ClCompile>
+    <ClCompile Include="Message.cpp">
+      <Filter>消息</Filter>
+    </ClCompile>
+    <ClCompile Include="EasyLog.cpp">
+      <Filter>工具</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -7,6 +7,7 @@
 //必须引入以下库 否则StrStrA有问题
 #pragma comment(lib,"Shlwapi.lib")
 using namespace std;
+
 DWORD dbHookAddress;
 std::wstring dbStrAll;
 list<DBNameHandle> dbList;
@@ -47,7 +48,7 @@ __declspec(naked) void My_Hook()
 	}
 }
 
-void hookDBHandle()
+void HookDBHandle()
 {
 	DWORD dllAddr;
 	while (true) {
@@ -73,7 +74,7 @@ void hookDBHandle()
 	
 	dbHookAddress = hookAddress + 6;
 	BYTE jumpCode[6] = {0};
-	jumpCode[0] = 0xE9;//jump
+	jumpCode[0] = 0xE9;//jmp
 	jumpCode[5] = 0x90;//nop
 	*(DWORD*)&jumpCode[1] = (DWORD)My_Hook - hookAddress - 5;
 	WriteProcessMemory(GetCurrentProcess(), (LPVOID)hookAddress, jumpCode, 6, NULL);

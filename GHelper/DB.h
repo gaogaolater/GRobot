@@ -18,6 +18,6 @@ struct DBNameHandle {
 	int DBHandler;
 	char DBName[MAX_PATH];
 };
-void hookDBHandle();
+void HookDBHandle();
 list<DBNameHandle> GetDbListHandle();
 int ExecSql(string dbName, string sql, sqlite3_callback callback, char*& err);

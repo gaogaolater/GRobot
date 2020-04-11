@@ -152,7 +152,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="DB.h" />
+    <ClInclude Include="EasyLog.h" />
     <ClInclude Include="framework.h" />
+    <ClInclude Include="Message.h" />
     <ClInclude Include="MyInfo.h" />
     <ClInclude Include="offset.h" />
     <ClInclude Include="pch.h" />
@@ -163,6 +165,8 @@
   <ItemGroup>
     <ClCompile Include="DB.cpp" />
     <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="EasyLog.cpp" />
+    <ClCompile Include="Message.cpp" />
     <ClCompile Include="MyInfo.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

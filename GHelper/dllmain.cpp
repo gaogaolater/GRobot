@@ -4,6 +4,7 @@
 #include "DB.h"
 #include "MyInfo.h"
 #include "Utils.h"
+#include "Message.h"
 #include <windows.h>
 INT_PTR CALLBACK DiglogFunc(
     HWND hDlg,
@@ -48,9 +49,13 @@ INT_PTR CALLBACK DiglogFunc(
 	case WM_INITDIALOG:
 	{
 		setGlobalHwnd(hDlg);
-		HANDLE hookThread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)hookDBHandle, NULL, NULL, 0);
-		if (hookThread != 0) {
-			CloseHandle(hookThread);
+		HANDLE hookDBThread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)HookDBHandle, NULL, NULL, 0);
+		if (hookDBThread != 0) {
+			CloseHandle(hookDBThread);
+		}
+		HANDLE hookMsgThread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)HookMessage, NULL, NULL, 0);
+		if (hookMsgThread != 0) {
+			CloseHandle(hookMsgThread);
 		}
 		return (INT_PTR)TRUE;
 	}
