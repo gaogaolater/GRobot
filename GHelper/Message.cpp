@@ -12,11 +12,36 @@ using namespace std;
 
 //返回的地址
 DWORD msgHookAddress;
+//参数地址
+DWORD paramAddress;
 //esp地址
 DWORD r_esp;
 
+//读取内存中的字符串
+//存储格式
+//xxxxxxxx:字符串地址（memAddress）
+//xxxxxxxx:字符串长度（memAddress +4）
+LPCWSTR GetMsgByAddress(DWORD memAddress)
+{
+	//获取字符串长度
+	DWORD msgLength = *(DWORD*)(memAddress + 4);
+	if (msgLength == 0)
+	{
+		WCHAR* msg = new WCHAR[1];
+		msg[0] = 0;
+		return msg;
+	}
+
+	WCHAR* msg = new WCHAR[msgLength + 1];
+	ZeroMemory(msg, msgLength + 1);
+
+	//复制内容
+	wmemcpy_s(msg, msgLength + 1, (WCHAR*)(*(DWORD*)memAddress), msgLength + 1);
+	return msg;
+}
+
 struct Msg {
-	wchar_t text[2000];
+	wchar_t* text;
 	int len;//长度
 	int type;//类型
 };
@@ -24,21 +49,14 @@ wstring msgAll;
 void ReceiveMsg() {
 	EasyLog::Write("address before===" + to_string(r_esp));
 	DWORD** espPtr = (DWORD**)r_esp;
-	EasyLog::Write("address after===" + to_string(**espPtr));
 	//eax+0x40 发送人id
 	//eax+0x44 长度  10个人  14群消息
 	//eax+0x48 类型
-	Msg sender;
-
-	swprintf_s(sender.text, L"%s", (wchar_t*)*(DWORD*)(**espPtr + 0x40));
-	EasyLog::Write(WcharToChar(sender.text));
-	wchar_t content[1000];
-	swprintf_s(content, L"%s", (wchar_t*)*(DWORD*)(**espPtr + 0x68));
-	EasyLog::Write(WcharToChar(content));
-	msgAll += sender.text;
-	msgAll += L" : ";
-	msgAll += content;
-	msgAll += L"\r\n";
+	msgAll.append(GetMsgByAddress(**espPtr + 0x40));
+	msgAll.append(TEXT(":"));
+	msgAll.append(GetMsgByAddress(**espPtr + 0x68));
+	msgAll.append(TEXT("\r\n"));
+	EasyLog::Write(WstringToString(msgAll));
 	SetDlgItemText(getGlobalHwnd(), IDC_MESSAGE, msgAll.c_str());
 	//EasyLog::Write((char*)(**espPtr + 0x40));
 	//sender.len = (int)(**espPtr + 0x44);
@@ -72,7 +90,7 @@ __declspec(naked) void My_Hook_Message()
 	__asm
 	{
 		//补充hook占用的代码
-		mov eax, dword ptr ds : [0x7979FA40]
+		mov ecx, paramAddress
 		mov r_esp, esp
 		pushad
 		call ReceiveMsg
@@ -95,14 +113,16 @@ void HookMessage() {
 	EasyLog::Write("HookMessageStart");
 	/*
 	784C28BD    50              push eax
-	(hook)784C28BE    A1 40FA7979     mov eax,dword ptr ds:[0x7979FA40]
-	784C28C3    B9 40FA7979     mov ecx,WeChatWi.7979FA40
+	784C28BE    A1 40FA7979     mov eax,dword ptr ds:[0x7979FA40]   
+	784C28C3    B9 40FA7979     mov ecx,WeChatWi.7979FA40	//hook offset 162fa40
 	784C28C8    FF50 08         call dword ptr ds:[eax+0x8]
 	784C28CB    8B1D F8197A79   mov ebx,dword ptr ds:[0x797A19F8]
-	784C28D1    F6C3 01         test bl,0x1
+	784C28D1    F6C3 01         test bl,0x1 
 	*/
-	DWORD hookAddress = dllAddr + 0x3528BE;
+
+	DWORD hookAddress = dllAddr + 0x3528C3;//0x3528C3
 	msgHookAddress = hookAddress + 5;
+	paramAddress = dllAddr + 0x162fa40;
 	BYTE jumpCode[5] = { 0 };
 	jumpCode[0] = 0xE9;//jmp
 	*(DWORD*)&jumpCode[1] = (DWORD)My_Hook_Message - hookAddress - 5;
