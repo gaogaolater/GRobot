@@ -6,6 +6,9 @@
 #include "Utils.h"
 #include "Message.h"
 #include <windows.h>
+#define HOOK_LEN 5
+BYTE backCOde[HOOK_LEN] = {0};
+
 INT_PTR CALLBACK DiglogFunc(
     HWND hDlg,
     UINT message,
@@ -15,6 +18,10 @@ INT_PTR CALLBACK DiglogFunc(
 VOID ShowDialog(HINSTANCE hModule);
 void ShowMyInfo(HWND hDlg);
 void ExecSqlClient(HWND hDlg);
+void HookLoginQrcode(HWND hDlg, LPVOID funAdd);
+void showPic();
+void saveImg(DWORD qrcode);
+
 BOOL APIENTRY DllMain( HMODULE hModule,
                        DWORD  ul_reason_for_call,
                        LPVOID lpReserved
@@ -69,6 +76,8 @@ INT_PTR CALLBACK DiglogFunc(
 		case IDBTNSQL:
 			ExecSqlClient(hDlg);
 			break;
+		case IDC_HOOK:
+			HookLoginQrcode(hDlg, showPic);
 		default:
 			break;
 		}
@@ -117,3 +126,85 @@ void ShowMyInfo(HWND hDlg) {
 	SetDlgItemText(hDlg, IDC_EBLOG, text);
 }
 
+void saveImg(DWORD qrcode) {
+	// 图片长度
+	DWORD picLen = qrcode + 0x4;
+	// 图片的数据
+	char PicData[0xFFF] = { 0 };
+	size_t cpyLen = (size_t)*((LPVOID *)picLen);
+	// 获取到图片数据
+	memcpy(PicData, *((LPVOID *)qrcode), cpyLen);
+	FILE * pFile;
+	// 打开文件 不存在就创建
+	fopen_s(&pFile, "qrcode.png", "wb");
+	fwrite(PicData, sizeof(char), sizeof(PicData), pFile);
+	fclose(pFile);
+}
+
+// pushad pushfd popad popsd
+DWORD pEax = 0;
+DWORD pEcx = 0;
+DWORD pEdx = 0;
+DWORD pEbx = 0;
+DWORD pEbp = 0;
+DWORD pEsp = 0;
+DWORD pEsi = 0;
+DWORD pEdi = 0;
+DWORD returnAddr = 0;
+// 声明裸函数
+void __declspec(naked) showPic() {
+	// 备份寄存器
+	__asm {
+		mov pEax, eax
+		mov pEcx, ecx
+		mov pEdx, edx
+		mov pEbx, ebx
+		mov pEbp, ebp
+		mov pEsp, esp
+		mov pEsi, esi
+		mov pEdi, edi
+	}
+	// 我们的二维码数据在ecx里面
+	// 现在写一个函数用来保存二维码数据
+	saveImg(pEcx);
+	returnAddr = GetWeChatWinAddress() + 0x4DB04F;
+	__asm {
+		mov eax, pEax
+		mov ecx, pEcx
+		mov edx, pEdx
+		mov ebx, pEbx
+		mov ebp, pEbp
+		mov esp, pEsp
+		mov esi, pEsi
+		mov edi, pEdi
+		jmp returnAddr
+	}
+	
+}
+
+/*
+基址 + 0x4DB04A
+返回的地址4DB04F
+*/
+void HookLoginQrcode(HWND hDlg, LPVOID funAdd) {
+	DWORD WinAddr = GetWeChatWinAddress();
+	// hook地址
+	DWORD hookAddr = WinAddr + 0x4DB04A;
+	// 组装数据 byte 4DB04F
+	BYTE jmpCode[HOOK_LEN] = { 0 };
+	jmpCode[0] = 0xE9;
+	*(DWORD*)&jmpCode[1] = (DWORD)(funAdd)-hookAddr - HOOK_LEN;
+	// 获取自己的进程句柄
+	HANDLE hWHND = OpenProcess(PROCESS_ALL_ACCESS, NULL, GetCurrentProcessId());
+	// 备份hook地址的数据
+	if (ReadProcessMemory(hWHND, (LPCVOID)hookAddr, backCOde, HOOK_LEN, NULL) == 0) {
+		MessageBoxA(NULL, "读取内存数据失败", "错误", 0);
+		return;
+	}
+	// 写入我们组好的数据
+	if (WriteProcessMemory(hWHND, (LPVOID)hookAddr, jmpCode, HOOK_LEN, NULL) == 0) {
+		MessageBoxA(NULL, "内存写入失败", "错误", 0);
+		return;
+	}
+	//MessageBoxA(NULL, "你点了hook登陆二维码按钮", "提示", 0);
+}
