@@ -22,6 +22,7 @@ void ExecSqlClient(HWND hDlg);
 void HookLoginQrcode(HWND hDlg, LPVOID funAdd);
 void showPic();
 void saveImg(DWORD qrcode);
+void GetLoginQrcodeStr(HWND hDlg);
 HWND hDlgCommon = NULL;
 
 BOOL APIENTRY DllMain( HMODULE hModule,
@@ -81,6 +82,9 @@ INT_PTR CALLBACK DiglogFunc(
 			break;
 		case IDC_HOOK:
 			HookLoginQrcode(hDlg, showPic);
+		case IDC_GETQRCODESTR:
+			GetLoginQrcodeStr(hDlg);
+			break;
 		default:
 			break;
 		}
@@ -142,7 +146,6 @@ void saveImg(DWORD qrcode) {
 	fopen_s(&pFile, "qrcode.png", "wb");
 	fwrite(PicData, sizeof(char), sizeof(PicData), pFile);
 	fclose(pFile);
-
 	CImage img;
 	CRect rect;
 	HWND PicHan =  GetDlgItem(hDlgCommon, IDC_QRCODE);
@@ -218,4 +221,10 @@ void HookLoginQrcode(HWND hDlg, LPVOID funAdd) {
 		return;
 	}
 	//MessageBoxA(NULL, "你点了hook登陆二维码按钮", "提示", 0);
+}
+
+void GetLoginQrcodeStr(HWND hDlg) {
+	char qrcodeStr[500] = { 0 };
+	sprintf_s(qrcodeStr, "二维码地址：http://weixin.qq.com/x/%s", (char*)*((DWORD*)(GetWeChatWinAddress() + 0x1631A88)));
+	SetDlgItemTextA(getGlobalHwnd(), IDC_LOGINQRCODEINFO, qrcodeStr);
 }
