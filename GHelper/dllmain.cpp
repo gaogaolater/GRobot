@@ -6,6 +6,7 @@
 #include "Utils.h"
 #include "Message.h"
 #include <windows.h>
+#include <atlimage.h>
 #define HOOK_LEN 5
 BYTE backCOde[HOOK_LEN] = {0};
 
@@ -21,6 +22,7 @@ void ExecSqlClient(HWND hDlg);
 void HookLoginQrcode(HWND hDlg, LPVOID funAdd);
 void showPic();
 void saveImg(DWORD qrcode);
+HWND hDlgCommon = NULL;
 
 BOOL APIENTRY DllMain( HMODULE hModule,
                        DWORD  ul_reason_for_call,
@@ -55,6 +57,7 @@ INT_PTR CALLBACK DiglogFunc(
 	{
 	case WM_INITDIALOG:
 	{
+		hDlgCommon = hDlg;
 		setGlobalHwnd(hDlg);
 		HANDLE hookDBThread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)HookDBHandle, NULL, NULL, 0);
 		if (hookDBThread != 0) {
@@ -139,6 +142,14 @@ void saveImg(DWORD qrcode) {
 	fopen_s(&pFile, "qrcode.png", "wb");
 	fwrite(PicData, sizeof(char), sizeof(PicData), pFile);
 	fclose(pFile);
+
+	CImage img;
+	CRect rect;
+	HWND PicHan =  GetDlgItem(hDlgCommon, IDC_QRCODE);
+	GetClientRect(PicHan, &rect);
+	// 载入图片
+	img.Load(L"qrcode.png");
+	img.Draw(GetDC(PicHan), rect);
 }
 
 // pushad pushfd popad popsd
