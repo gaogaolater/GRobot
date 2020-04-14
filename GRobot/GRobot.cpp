@@ -11,10 +11,12 @@
 #include "OpenWeChat.h"
 #include "Utils.h"
 #include<list>
+#include <CommCtrl.h>
 using namespace std;
 
 void StartWeChat(HWND hDlg);
 INT_PTR CALLBACK wechatRobot(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
+
 // 全局变量:
 HINSTANCE hInst;                                // 当前实例
 

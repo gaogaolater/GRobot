@@ -50,6 +50,7 @@ __declspec(naked) void My_Hook()
 
 void HookDBHandle()
 {
+	SetDlgItemText(getGlobalHwnd(), IDC_EBSQL, L"select * from sqlite_master");
 	DWORD dllAddr;
 	while (true) {
 		dllAddr = GetWeChatWinAddress();
@@ -87,6 +88,9 @@ list<DBNameHandle> GetDbListHandle()
 
 int ExecSql(string dbName, string sql, sqlite3_callback callback, char*& err)
 {
+	if (dbName.empty() || sql.empty()) {
+		return 0;
+	}
 	sqlite3_exec sqlexec = (sqlite3_exec)(GetWeChatWinAddress() + 0x8C4430);
 	list<DBNameHandle> dbList = GetDbListHandle();
 	for (auto& db : dbList)

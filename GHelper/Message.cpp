@@ -129,3 +129,78 @@ void HookMessage() {
 	WriteProcessMemory(GetCurrentProcess(), (LPVOID)hookAddress, jumpCode, 5, NULL);
 	EasyLog::Write("HookMessageEnd");
 }
+
+/*
+基址：6a9f0000
+
+6AAD234D    E8 9EC1F6FF     call WeChatWi.6AA3E4F0
+6AAD2352    8B55 B0         mov edx,dword ptr ss:[ebp-0x50]
+6AAD2355    8D43 14         lea eax,dword ptr ds:[ebx+0x14]
+6AAD2358    6A 01           push 0x1
+6AAD235A    50              push eax
+6AAD235B    53              push ebx
+6AAD235C    8D8D 84F7FFFF   lea ecx,dword ptr ss:[ebp-0x87C]
+6AAD2362    E8 B9562400     call WeChatWi.6AD17A20
+6AAD2367    83C4 0C         add esp,0xC
+6AAD236A    50              push eax
+
+edx 数据：
+0DF3D550  111D4E48  UNICODE "wb362115359"
+0DF3D554  0000000B
+0DF3D558  00000020
+
+eax = 0
+
+ebx
+0E09005C  1184C7C8  UNICODE "已经好了啊"
+0E090060  00000005
+0E090064  00000008
+0E090068  00000000
+0E09006C  00000000
+0E090070  00000000
+0E090074  00000000
+0E090078  00000000
+0E09007C  00000000
+*/
+
+struct SendMsgStruct {
+	wchar_t* text;
+	int length;
+	int bufLen;
+};
+
+void SendText(wchar_t* wxid, wchar_t* msg)
+{
+	wstring log = L"";
+	log += wxid;
+	log += L":";
+	log += msg;
+	EasyLog::Write(WstringToString(log));
+	EasyLog::Write("HookMessageStart");
+	BYTE buff[0x87c] = { 0 };
+	SendMsgStruct struct_wxid;
+	struct_wxid.text = wxid;
+	struct_wxid.length = wcslen(wxid);
+	struct_wxid.bufLen = wcslen(wxid) * 2;
+	SendMsgStruct struct_msg;
+	struct_msg.text = msg;
+	struct_msg.length = wcslen(msg);
+	struct_msg.bufLen = wcslen(msg) * 2;
+
+	DWORD* wxidPtr = (DWORD*)&struct_wxid.text;
+	DWORD* msgPtr = (DWORD*)&struct_msg.text;
+
+	DWORD sendTextAddr = GetWeChatWinAddress() + 0x327A20;
+	__asm {
+		pushad
+		mov edx, wxidPtr
+		mov ebx, msgPtr
+		push 0x1
+		push 0
+		push ebx
+		lea ecx, buff
+		call sendTextAddr
+		add esp, 0xC
+		popad
+	}
+}

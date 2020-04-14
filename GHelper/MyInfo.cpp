@@ -44,3 +44,11 @@ MyInfo * GetMyInfo()
 //	root["headImage"] = info->headImage;
 //	return root;
 //}
+
+
+void getContactList()
+{
+	//ListView_DeleteAllItems(GetDlgItem(getGlobalHwnd(), FRIEND_LIST));
+	char* sqlErrmsg = NULL;
+	//runSql("MicroMsg.db", "select Contact.UserName,Contact.Alias,Contact.NickName,Contact.Remark,ContactHeadImgUrl.bigHeadImgUrl from Contact LEFT OUTER JOIN ContactHeadImgUrl ON Contact.UserName = ContactHeadImgUrl.usrName", getContactCallBack, sqlErrmsg);
+}

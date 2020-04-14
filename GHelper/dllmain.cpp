@@ -15,6 +15,7 @@ INT_PTR CALLBACK DiglogFunc(
 VOID ShowDialog(HINSTANCE hModule);
 void ShowMyInfo(HWND hDlg);
 void ExecSqlClient(HWND hDlg);
+void SendTextMsgClient(HWND hDlg);
 BOOL APIENTRY DllMain( HMODULE hModule,
                        DWORD  ul_reason_for_call,
                        LPVOID lpReserved
@@ -34,6 +35,24 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 
 VOID ShowDialog(HINSTANCE hModule) {
 	DialogBox(hModule, MAKEINTRESOURCE(IDD_MAIN), NULL, &DiglogFunc);
+}
+
+HWND contactSelect;
+int SQLCallbackContactList(void* para, int nColumn, char** colValue, char** colName)
+{
+	char wxid[500];
+	sprintf_s(wxid, "%s", colValue[0]);
+	SendMessage(contactSelect, CB_ADDSTRING, 0, (LPARAM)UTF8ToUnicode(wxid));
+	return 0;
+}
+
+void SetContactList(HWND hDlg) {
+	string sql = "select UserName from Contact";
+	char* sqlErrmsg = NULL;
+	contactSelect = GetDlgItem(getGlobalHwnd(), IDC_COBCONTACTLIST);
+	//清空
+	SendMessage(contactSelect, CB_RESETCONTENT, 0, 0);
+	ExecSql("MicroMsg.db", sql, SQLCallbackContactList, sqlErrmsg);
 }
 
 INT_PTR CALLBACK DiglogFunc(
@@ -69,6 +88,13 @@ INT_PTR CALLBACK DiglogFunc(
 		case IDBTNSQL:
 			ExecSqlClient(hDlg);
 			break;
+		case IDC_BTNSEND:
+			//IDC_SENDTXT
+			SendTextMsgClient(hDlg);
+			break;
+		case IDC_BTNUSERLIST:
+			SetContactList(hDlg);
+			break;
 		default:
 			break;
 		}
@@ -81,6 +107,17 @@ INT_PTR CALLBACK DiglogFunc(
 	return (INT_PTR)FALSE;
 }
 
+void SendTextMsgClient(HWND hDlg) {
+	wchar_t wxid[1000];
+	GetDlgItemText(hDlg, IDC_COBCONTACTLIST, wxid, 1000);
+	wchar_t msg[2000];
+	GetDlgItemText(hDlg, IDC_SENDTXT, msg, 2000);
+
+	if (wcslen(wxid) > 5 && wcslen(msg) > 0) {
+		SendText(wxid, msg);
+	}
+}
+
 //sql查询结果
 wstring sqlResult;
 int SQLCallback(void* para, int nColumn, char** colValue, char** colName) 
@@ -89,7 +126,7 @@ int SQLCallback(void* para, int nColumn, char** colValue, char** colName)
 	{
 		char row[1000];
 		sprintf_s(row, " %s:%s ",*(colName + i), colValue[i]);
-		sqlResult += CharToWchar(row);
+		sqlResult += UTF8ToUnicode(row);
 	}
 	sqlResult += L"\r\n";
 	SetDlgItemText(getGlobalHwnd(), IDC_SQLRESULT, sqlResult.c_str());
@@ -116,4 +153,6 @@ void ShowMyInfo(HWND hDlg) {
 		UnicodeToUtf8(info->nickname));
 	SetDlgItemText(hDlg, IDC_EBLOG, text);
 }
+
+
 
