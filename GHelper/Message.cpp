@@ -204,3 +204,69 @@ void SendText(wchar_t* wxid, wchar_t* msg)
 		popad
 	}
 }
+
+/*
+基址 78380000
+
+7846245A  |> \53            |push ebx                                ;  图片临时路径; Case 2 of switch 784622B2
+7846245B  |.  FF75 B0       |push [local.20]                         ;  接收人wxid
+7846245E  |.  8D85 44FBFFFF |lea eax,[local.303]                     ;  buff  lea eax,dword ptr ss:[ebp-0x4BC]
+78462464  |.  50            |push eax
+78462465  |.  51            |push ecx                                ;  0
+78462466  |.  E8 85C0F6FF   |call WeChatWi.783CE4F0
+7846246B  |.  83C4 04       |add esp,0x4
+7846246E  |.  8BC8          |mov ecx,eax
+78462470      E8 9B4F2400   call WeChatWi.786A7410
+
+ebx
+16CEC49C  16625C00  UNICODE "C:\Users\gaogao\AppData\Local\Temp\1586912818.jpg"
+16CEC4A0  00000031
+16CEC4A4  00000040
+
+[local.20]
+11ED85E0  119964A0  UNICODE "wb362115359"
+11ED85E4  0000000B
+11ED85E8  00000010
+
+eax 
+buff  lea eax,dword ptr ss:[ebp-0x4BC]
+
+ecx 0
+lea ecx,dword ptr ss:[ebp-0x78]
+*/
+void SendImage(wchar_t* wxid, wchar_t* imagePath)
+{
+	DWORD call1 = GetWeChatWinAddress() + 0x327410;
+	DWORD call2 = GetWeChatWinAddress() + 0x2871f0;
+	SendMsgStruct wxidStuct;
+	wxidStuct.text = wxid;
+	wxidStuct.length = wcslen(wxid);
+	wxidStuct.bufLen = wcslen(wxid) * 2;
+	SendMsgStruct imagePathStuct;
+	imagePathStuct.text = imagePath;
+	imagePathStuct.length = wcslen(imagePath);
+	imagePathStuct.bufLen = wcslen(imagePath) * 2;
+	BYTE buff[0x4BC] = { 0 };
+	DWORD r_esp = 0;
+	__asm 
+	{
+		mov r_esp, esp
+		lea ebx, imagePathStuct
+		push ebx
+		lea eax, wxidStuct
+		push eax
+		lea eax, buff
+		push eax
+		push 0
+		call call1
+		add esp, 0x4
+		mov ecx, eax
+		call call2
+		mov eax, r_esp
+		mov esp, eax
+	}
+}
+
+void SendFile(wchar_t* wxid, wchar_t* filePath)
+{
+}

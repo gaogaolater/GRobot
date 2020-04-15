@@ -16,6 +16,8 @@ VOID ShowDialog(HINSTANCE hModule);
 void ShowMyInfo(HWND hDlg);
 void ExecSqlClient(HWND hDlg);
 void SendTextMsgClient(HWND hDlg);
+void SendImgClient(HWND hDlg);
+void SendFileClient(HWND hDlg);
 BOOL APIENTRY DllMain( HMODULE hModule,
                        DWORD  ul_reason_for_call,
                        LPVOID lpReserved
@@ -95,6 +97,12 @@ INT_PTR CALLBACK DiglogFunc(
 		case IDC_BTNUSERLIST:
 			SetContactList(hDlg);
 			break;
+		case IDC_BTNSENDIMG:
+			SendImgClient(hDlg);
+			break;
+		case IDC_BTNSENDFILE:
+			SendFileClient(hDlg);
+			break;
 		default:
 			break;
 		}
@@ -115,6 +123,26 @@ void SendTextMsgClient(HWND hDlg) {
 
 	if (wcslen(wxid) > 5 && wcslen(msg) > 0) {
 		SendText(wxid, msg);
+	}
+}
+
+void SendImgClient(HWND hDlg) {
+	wchar_t wxid[1000];
+	GetDlgItemText(hDlg, IDC_COBCONTACTLIST, wxid, 1000);
+	wchar_t msg[2000];
+	GetDlgItemText(hDlg, IDC_SENDTXT, msg, 2000);
+	if (wcslen(wxid) > 5 && wcslen(msg) > 0) {
+		SendImage(wxid, msg);
+	}
+}
+
+void SendFileClient(HWND hDlg) {
+	wchar_t wxid[1000];
+	GetDlgItemText(hDlg, IDC_COBCONTACTLIST, wxid, 1000);
+	wchar_t msg[2000];
+	GetDlgItemText(hDlg, IDC_SENDTXT, msg, 2000);
+	if (wcslen(wxid) > 5 && wcslen(msg) > 0) {
+		SendFile(wxid, msg);
 	}
 }
 
