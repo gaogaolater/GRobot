@@ -130,7 +130,8 @@ void SendImgClient(HWND hDlg) {
 	wchar_t wxid[1000];
 	GetDlgItemText(hDlg, IDC_COBCONTACTLIST, wxid, 1000);
 	wchar_t msg[2000];
-	GetDlgItemText(hDlg, IDC_SENDTXT, msg, 2000);
+	//GetDlgItemText(hDlg, IDC_SENDTXT, msg, 2000);
+	swprintf_s(msg, L"%s", L"filehelper");
 	if (wcslen(wxid) > 5 && wcslen(msg) > 0) {
 		SendImage(wxid, msg);
 	}

@@ -6,6 +6,7 @@
 #include <string>
 #include "resource.h"
 #include "EasyLog.h"
+#include "offset.h"
 //必须引入以下库 否则StrStrA有问题
 #pragma comment(lib,"Shlwapi.lib")
 using namespace std;
@@ -233,11 +234,13 @@ buff  lea eax,dword ptr ss:[ebp-0x4BC]
 
 ecx 0
 lea ecx,dword ptr ss:[ebp-0x78]
+
+发送图片会有图片占用情况，建议先复制到固定的目录再发送
 */
 void SendImage(wchar_t* wxid, wchar_t* imagePath)
 {
-	DWORD call1 = GetWeChatWinAddress() + 0x327410;
-	DWORD call2 = GetWeChatWinAddress() + 0x2871f0;
+	DWORD call1 = GetWeChatWinAddress() + 0x4E4F0;
+	DWORD call2 = GetWeChatWinAddress() + 0x327410;
 	SendMsgStruct wxidStuct;
 	wxidStuct.text = wxid;
 	wxidStuct.length = wcslen(wxid);
@@ -266,7 +269,104 @@ void SendImage(wchar_t* wxid, wchar_t* imagePath)
 		mov esp, eax
 	}
 }
+/*
+基址 78380000
 
+784625D9  |.  FF75 A4       |push [local.23]                         ;  start 0
+784625DC  |.  83EC 14       |sub esp,0x14
+784625DF  |.  8BCC          |mov ecx,esp
+784625E4  |.  6A FF         |push -0x1
+784625E6  |.  68 A8586E79   |push WeChatWi.796E58A8
+784625EB  |.  E8 00A33F00   |call WeChatWi.7885C8F0
+784625F0  |.  83EC 14       |sub esp,0x14
+784625F3  |.  8BCC          |mov ecx,esp
+784625F8  |.  53            |push ebx                                ;  文件路径
+784625F9  |.  E8 32A33F00   |call WeChatWi.7885C930
+784625FE  |.  83EC 14       |sub esp,0x14
+78462601  |.  8BCC          |mov ecx,esp
+78462606  |.  FF75 B0       |push [local.20]                         ;  发送对象的wxid
+78462609  |.  E8 22A33F00   |call WeChatWi.7885C930
+7846260E  |.  8D85 44FBFFFF |lea eax,[local.303]                     ;  buffer
+78462618  |.  50            |push eax
+78462619  |.  E8 D21DF7FF   |call WeChatWi.783D43F0                  ;  组合发送数据
+7846261E      8BC8          |mov ecx,eax
+78462620      C645 FC 0C    |mov byte ptr ss:[ebp-0x4],0xC
+78462624      E8 87B11700   |call WeChatWi.785DD7B0                  ;  发送文件
+
+文件结构
+0F4793DC  0696CF48  UNICODE "\\Mac\Home\Desktop\Windows\10.txt"
+0F4793E0  00000021
+0F4793E4  00000040
+0F4793E8  00000000
+0F4793EC  00000000
+0F4793F0  00000000
+0F4793F4  00000000
+0F4793F8  00000000
+0F4793FC  00000000
+
+wxid结构
+0F3921B0  04B00220  UNICODE "filehelper"
+0F3921B4  0000000A
+0F3921B8  00000010
+0F3921BC  00000000
+0F3921C0  00000000
+0F3921C4  00000000
+
+*/
 void SendFile(wchar_t* wxid, wchar_t* filePath)
 {
+	struct FileStruct {
+		wchar_t* text;
+		int len = 0;
+		int maxLen = 0;
+		int buff[0x18] = { 0 };
+	};
+
+	struct WxidStruct {
+		wchar_t* text;
+		int len = 0;
+		int maxLen = 0;
+		int buff[0xC] = { 0 };
+	};
+
+	FileStruct fileStruct;
+	fileStruct.text = filePath;
+	fileStruct.len = wcslen(filePath);
+	fileStruct.maxLen = wcslen(filePath) * 2;
+	WxidStruct wxidStruct;
+	wxidStruct.text = wxid;
+	wxidStruct.len = wcslen(wxid);
+	wxidStruct.maxLen = wcslen(wxid) * 2;
+	DWORD param1 = GetWeChatWinAddress() + MSG_FILE_PARAM1;
+	DWORD call1 = GetWeChatWinAddress() + MSG_FILE_CALL1;
+	DWORD call2 = GetWeChatWinAddress() + MSG_FILE_CALL2;
+	DWORD call3 = GetWeChatWinAddress() + MSG_FILE_CALL3;
+	DWORD call4 = GetWeChatWinAddress() + MSG_FILE_CALL4;
+	char* wxidPtr = (char*)&wxidStruct;
+	char* pathPtr = (char*)&fileStruct;
+	char buff[0x4BC] = { 0 };
+
+	//基址 78380000
+	__asm {
+		push 0
+		sub esp, 0x14
+		mov ecx, esp
+		push - 0x1
+		push param1
+		call call1
+		sub esp, 0x14
+		mov ecx, esp
+		mov ebx, pathPtr
+		push ebx
+		call call2
+		sub esp, 0x14
+		mov ecx, esp
+		push wxidPtr
+		call call2
+		lea eax, buff
+		push eax
+		call call3
+		mov ecx, eax
+		call call4
+	}
 }

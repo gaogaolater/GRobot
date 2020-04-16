@@ -22,4 +22,14 @@
 
 
 
+/*
+发送消息
+*/
+#define MSG_FILE_PARAM1 0x13658A8
+#define MSG_FILE_CALL1 0x4DC8F0
+#define MSG_FILE_CALL2 0x4DC930
+#define MSG_FILE_CALL3 0x543F0
+#define MSG_FILE_CALL4 0x25D7B0
+
+
 
